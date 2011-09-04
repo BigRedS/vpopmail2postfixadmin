@@ -5,7 +5,8 @@
 # Exports a dump of the (interesting bits) of the current vpopmail
 # configuration suitable for shoving into import.pl/.
 #
-# Todo: Be able to run on a remote server by doing things via SSH.
+##Todo: Handle aliases. Oops
+##Todo: Be able to run on a remote server by doing things via SSH.
 
 use strict;
 
