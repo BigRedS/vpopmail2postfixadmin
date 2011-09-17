@@ -16,21 +16,25 @@ use Data::Dumper;
 use Vpostmail;
 use Getopt::Std;
 my %o;
-$o{dryrun} = 3;
-$o{verbose} = 1;
 my %options;
 
-getopts('dv:f:', \%options);
-$o{verbose} = $options{v};
+getopts('dv:f:g:p:', \%options);
+$o{verbose} = $options{v} || 2;
 my $file = $options{f};
+my $passwordFile = $options{p} || "./passwords";
+my $pwgen = $options{g} || 'pwgen 10 1';
+$o{dryrun} = 3 if exists($options{d});
+
+if ( exists($options{h}) || $file =~ /^$/){
+	usage();
+}
 
 # Import the dump:
-#y $file = $ARGV[0];
 $/ = undef;
 open(my $f, "<", $file);
-#my $dump = <$f>;
-#close($f);
 my %config = %{eval <$f>};
+
+open(my $pwfile, ">", $passwordFile) or die "Error opening password file $passwordFile";
 
 # Create a vpostmail object:
 my $v = Vpostmail->new(
@@ -79,18 +83,17 @@ foreach my $domain (keys(%config)){
 			if (($verbosity > 0) && ($dotqmail[0] =~ /.+/)){
 				foreach(@dotqmail){
 					if($verbosity < 2){
-						print "$email : $_\n";
+						print STDERR "$email : $_\n";
 					}else{
-						print "Can't configure: $_\n";
+						print STDERR "Can't configure: $_\n";
 					}
 				}
 			}
 
 
 			$v->setUser($email);
-			if ($forwardto[0]=~/.+/){
-				$forwards = join(/, /, @forwardto);
-				$v->createAliasUser(target => $forwards) unless(exists($o{dryrun}));
+			if ($forwardto[0]=~/\@/){
+				$v->createAliasUser(target => [@forwardto]) unless(exists($o{dryrun}));
 				print "\t  -> forwards to $forwards\n" if $o{verbose} > 2;
 			}else{
 				unless ($v->userExists && (!exists($o{dryrun}))){
@@ -101,6 +104,11 @@ foreach my $domain (keys(%config)){
 						active => 1,
 					);
 				}
+				if ($plain =~ /^$/){
+					$plain = qx/$pwgen/;
+					print $pwfile "$user:$plain\n";
+				}
+				chomp $plain;
 				print "\t  ->Setting password to $plain\n" if $o{verbose} > 8;
 				$v->changePassword($plain) unless(exists($o{dryrun}));
 			}
@@ -108,4 +116,44 @@ foreach my $domain (keys(%config)){
 	}
 }
 
+sub usage(){
 
+print <<EOF;
+import.pl , part of vpopmail2postfixadmin
+
+usage:
+
+	import.pl <options> -f <file>
+
+Options:
+	-d 		dry run; do everything except that which
+			involves writing to the db.
+	-f <file> 	read from <file> for config data. 
+	-g <expr>	evaluate expr to generate files. 
+			Is executed in the shell, not perl. 
+			Defaults to `$pwgen`
+	-h 		show this help
+	-p <file>	write generated passwords to <file>
+			default: $passwordFile
+	-v <num>	set verbosity to num:
+			1 : print only lines from .qmail files
+			    that I don't understand
+			2 : name of each domain configured
+			3 : username for each user configured
+			4 : parameters used for each domain and 
+			    user (except passwords)
+			9 : clear passwords for all
+			    users
+
+Verbosity is cumulative - setting it to 3 will enable 2 and 1, 
+too. That which is printed at 1 is printed to STDERR, 
+irrespective of higher numbers (which go to STDOUT).
+
+Users in the supplied config with no clear-text passwords have
+one generated for them using the parameter to -g (or its 
+default) these usernames and their auto-generated passwords 
+written to the password file specified by -p (or its default).
+
+EOF
+exit 1;
+}
