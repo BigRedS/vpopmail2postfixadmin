@@ -1,0 +1,95 @@
+vpopmail2postfixadmin
+=====================
+
+The plan was for a single script to migrate a system from Inter7's [vpopmail][0] 
+to [postfixadmin][1].
+
+The result is a pair of scripts since the export requires a [vpopmail module][2] that
+you probably don't want to install on the postfix machine, and the import one 
+requires my [Vpostmail][3] module which you probably don't want on the vpopmail one.
+
+So it's as simple as a single-script migration, but a little bit simpler and most of 
+the complexity is down to my module not being on CPAN.
+
+
+Anyway, two scripts. The general usage would be
+
+    root@vpopmail-server~: export.pl mailconfig
+    root@vpopmail-server~: scp mailconfig root@postfix-server:~
+
+    root@postfix-server~: import.pl -f mailconfig
+
+limitations
+-----------
+
+It can currently only migrate three things:
+
+* username
+* password
+* forwarding address 
+
+and two of those have caveats. It'll only do the password so long as vpopmail
+has stored it in clear text. There's no de-hashing going on. And if it finds a 
+(or multiple) forwarding addresses in the .qmail file, then local mail delivery
+is not configured and only that forwarding is. On the plus side, it will forward 
+to all those addresses.
+
+export.pl
+---------
+exports config from the vpopmail system on the machine it's run on. Dumps the
+config to the file passed as its only argument. It's basically a hash of hashes
+( `$hash{domain}{user}{<parameter>}` ) dumped out through `Data::Dumper`. In fact, 
+it's exactly that.
+
+The usage is refreshingly simple; there are no options, all you can make it do is 
+dump config to a file:
+
+    export.pl ./somefile
+
+import.pl
+---------
+Imports config from the file it's passed (as produced by export.pl) by `eval`ing it
+and inserts it into the postfixadmin system on the machine it's run on. Requires my 
+Vpostadmin module.
+
+This one has options and everything:
+
+    import.pl , part of vpopmail2postfixadmin
+    
+    usage:
+    
+    	import.pl <options> -f <file>
+    
+    Options:
+        -d 		dry run; do everything except that which
+                       	involves writing to the db.
+        -f <file> 	read from <file> for config data. 
+        -g <expr>	evaluate expr to generate files. 
+                        Is executed in the shell, not perl. 
+                        defaults to `pwgen 10 1`
+        -h              Show this help
+        -p <file>       write generated passwords to <file>
+                        default: ./passwords
+        -v <num>        set verbosity to num:
+                        1 : print only lines from .qmail files
+                            that I don't understand
+                        2 : name of each domain configured
+                        3 : username for each user configured
+                        4 : parameters used for each domain and 
+                            user (except passwords)
+                        9 : clear passwords for all
+                            users
+    
+    Verbosity is cumulative - setting it to 3 will enable 2 and 1, 
+    too. That which is printed at 1 is printed to STDERR, 
+    irrespective of higher numbers (which go to STDOUT).
+    
+    Users in the supplied config with no clear-text passwords have
+    one generated for them using the parameter to -g (or its 
+    default) these usernames and their auto-generated passwords 
+    written to the password file specified by -p (or its default).
+
+[0]: http://www.inter7.com/index.php?page=vpopmail
+[1]: http://postfixadmin.sourceforge.net/
+[2]: http://search.cpan.org/~jkister/Mail-vpopmail-0.60b3/vpopmail.pm
+[3]: https://github.com/BigRedS/vpostmail
