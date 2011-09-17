@@ -18,6 +18,8 @@ my $vpopmail = Mail::vpopmail->new(debug=>'0');
 
 my $file = $ARGV[0] || usage();
 
+open(my $f, ">", $file) or die ("Error opening $file for writing");
+
 my %data;
 my %data = getDomains();
 foreach my $domain (keys(%data)){
@@ -33,12 +35,16 @@ foreach my $domain (keys(%data)){
 		my @dotQmailFile = getDotQmailFile($data{$domain}{$email}{'dir'}, $user);
 		foreach(@dotQmailFile){
 			if (/^\s*\&(.+)/){push(@forwardto, $1);}
+			$_ = "";
 		}
+		@dotQmailFile = grep(!/^\s*$/, @dotQmailFile);
 		$data{$domain}{$email}{'forwardto'} = \@forwardto;
 		$data{$domain}{$email}{'dotqmail'} = \@dotQmailFile;
 	}
 }
-print Dumper(\%data);
+
+print $f Dumper(\%data);
+close($f);
 
 # Passed nothing, returns a hash whose keys are domain names, and each
 # domain has a 'name' element containing its name (equiv. to the key)
