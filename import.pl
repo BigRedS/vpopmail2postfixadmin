@@ -126,24 +126,23 @@ usage:
 	import.pl <options> -f <file>
 
 Options:
-	-d 		dry run; do everything except that which
-			involves writing to the db.
-	-f <file> 	read from <file> for config data. 
-	-g <expr>	evaluate expr to generate files. 
-			Is executed in the shell, not perl. 
-			Defaults to `$pwgen`
-	-h 		show this help
-	-p <file>	write generated passwords to <file>
-			default: $passwordFile
-	-v <num>	set verbosity to num:
-			1 : print only lines from .qmail files
-			    that I don't understand
-			2 : name of each domain configured
-			3 : username for each user configured
-			4 : parameters used for each domain and 
-			    user (except passwords)
-			9 : clear passwords for all
-			    users
+        -d              Dry run; do everything except that which
+                        involves writing to the db.
+        -f <file> 	Read from <file> for config data. 
+        -g <expr>       evaluate expr to generate passwords where 
+	                necessary (see below). Is executed in the 
+                        shell, not perl. Default: `$pwgen`
+        -h              Show this help
+        -p <file>       Write generated passwords to <file>
+                        Default: $passwordFile
+        -v <num>        Set verbosity to num, will print:
+                        1 : Only those lines from .qmail files
+                            that I don't understand
+                        2 : Name of each domain configured
+                        3 : Username of each user configured
+                        4 : Parameters used for each domain and 
+                            user (except passwords)
+                        9 : Clear-text passwords of each user
 
 Verbosity is cumulative - setting it to 3 will enable 2 and 1, 
 too. That which is printed at 1 is printed to STDERR, 
