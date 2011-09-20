@@ -34,7 +34,7 @@ foreach my $domain (keys(%data)){
 		my @dotQmailFile = getDotQmailFile($data{$domain}{$email}{'dir'}, $user);
 		foreach(@dotQmailFile){
 			if (/^\s*\&?(.+\@.+)/){push(@forwardto, $1);}
-#			$_ = "";
+			$_ = "";
 		}
 		@dotQmailFile = grep(!/^\s*$/, @dotQmailFile);
 		$data{$domain}{$email}{'forwardto'} = \@forwardto;
