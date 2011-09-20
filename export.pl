@@ -8,7 +8,6 @@
 
 use strict;
 
-#use vpopmail;
 use Mail::vpopmail;
 use Data::Dumper;
 $Data::Dumper::Purity = 1;
@@ -34,8 +33,8 @@ foreach my $domain (keys(%data)){
 		$data{$domain}{$email}{'quota'}   = $vpopmail->userinfo(email=>$email, field=>'quota');
 		my @dotQmailFile = getDotQmailFile($data{$domain}{$email}{'dir'}, $user);
 		foreach(@dotQmailFile){
-			if (/^\s*\&(.+)/){push(@forwardto, $1);}
-			$_ = "";
+			if (/^\s*\&?(.+\@.+)/){push(@forwardto, $1);}
+#			$_ = "";
 		}
 		@dotQmailFile = grep(!/^\s*$/, @dotQmailFile);
 		$data{$domain}{$email}{'forwardto'} = \@forwardto;
