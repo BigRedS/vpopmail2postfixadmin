@@ -22,17 +22,18 @@ Anyway, two scripts. The general usage would be
 limitations
 -----------
 
-It can currently only migrate three things:
+It can currently only migrate four things:
 
-* username
-* password
-* forwarding address 
+* domains
+* usernames
+* passwords
+* forwarding addresses
 
-and two of those have caveats. It'll only do the password so long as vpopmail
-has stored it in clear text. There's no de-hashing going on. And if it finds a 
-(or multiple) forwarding addresses in the .qmail file, then local mail delivery
-is not configured and only that forwarding is. On the plus side, it will forward 
-to all those addresses.
+and two of those have caveats. It'll only do the password if  vpopmail has stored 
+it in clear text. There's no de-hashing going on. And if it finds a (or multiple)
+forwarding addresses in the .qmail file (i.e. lines beginning with '&' or containing
+'@' signs), then local mail delivery is not confiugred and instead all mail destined
+for that account is forwarded to those addresses listed in the .qmail file instead.
 
 export.pl
 ---------
