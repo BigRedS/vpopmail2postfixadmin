@@ -13,8 +13,9 @@
 use lib '/home/avi/bin/vpostmail';
 
 use Data::Dumper;
-use Vpostmail;
+use Mail::Postfixadmin;
 use Getopt::Std;
+use YAML;
 my %o;
 my %options;
 
@@ -31,18 +32,18 @@ if ( exists($options{h}) || $file =~ /^$/){
 
 # Import the dump:
 $/ = undef;
-open(my $f, "<", $file);
-my %config = %{eval <$f>};
+#open(my $f, "<", $file);
+#my %config = %{eval <$f>};
+my %config = LoadFile($file);
 
 open(my $pwfile, ">", $passwordFile) or die "Error opening password file $passwordFile";
 
-# Create a vpostmail object:
-my $v = Vpostmail->new(
+my $v = Mail::Postfixadmin->new(
 	mysqlconf => '/home/avi/bin/.vmail.mysql.conf',
 	storeCleartextPassword => 1,
 );
 
-#erbosity:
+#Verbosity:
 #1: can't-configures only (stdout)
 #2: 1 + domains
 #3: 2 + email addresses
