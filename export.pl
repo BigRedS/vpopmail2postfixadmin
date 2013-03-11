@@ -10,14 +10,13 @@ use strict;
 
 use Mail::vpopmail;
 use Data::Dumper;
+use YAML;
 $Data::Dumper::Purity = 1;
 $Data::Dumper::Useqq = 1;
 
 my $vpopmail = Mail::vpopmail->new(debug=>'0');
 
 my $file = $ARGV[0] || usage();
-
-open(my $f, ">", $file) or die ("Error opening $file for writing");
 
 my %data;
 my %data = getDomains();
@@ -42,8 +41,7 @@ foreach my $domain (keys(%data)){
 	}
 }
 
-print $f Dumper(\%data);
-close($f);
+YAML::DumpFile($file, %data);
 
 # Passed nothing, returns a hash whose keys are domain names, and each
 # domain has a 'name' element containing its name (equiv. to the key)
@@ -58,7 +56,7 @@ sub getDomains{
 			my $alias = $1;
 			push(@{$domains{$domain}{'aliases'}}, $1);
 		}
-		$domains{$domain}{'name'}='$domain';
+		$domains{$domain}{'name'}="$domain";
 	}
 	return %domains;
 }
