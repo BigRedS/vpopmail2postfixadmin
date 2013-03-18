@@ -38,7 +38,7 @@ foreach my $domain (keys(%data)){
 			}elsif (/^([\.\/].+)$/){
 				push(@deliverto, $1);
 				$_="";
-			}elsif (/^\s*\&?(.+\@.+)/){
+			}elsif (/^\s*\&?([\d[a-z].+\@.+)/){
 				push(@forwardto, $1);
 				$_="";
 			}else{
