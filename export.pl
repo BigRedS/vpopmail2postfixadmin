@@ -24,20 +24,33 @@ foreach my $domain (keys(%data)){
 	my @mailboxes = @{$vpopmail->domaininfo(domain => $domain, field=>'mailboxes')};
 	foreach my $user (@mailboxes){
 		my $email = $user.'@'.$domain;
-		my @forwardto;
+		my (@forwardto,@pipeto,@deliverto,@unknown);
 		#print $email."  ";
-		$data{$domain}{$email}{'dir'}     = $vpopmail->userinfo(email=>$email, field=>'dir');
-		$data{$domain}{$email}{'plain'}   = $vpopmail->userinfo(email=>$email, field=>'plain');
-		$data{$domain}{$email}{'comment'} = $vpopmail->userinfo(email=>$email, field=>'comment');
-		$data{$domain}{$email}{'quota'}   = $vpopmail->userinfo(email=>$email, field=>'quota');
-		my @dotQmailFile = getDotQmailFile($data{$domain}{$email}{'dir'}, $user);
+		$data{$domain}{'mailboxes'}{$email}{'dir'}     = $vpopmail->userinfo(email=>$email, field=>'dir');
+		$data{$domain}{'mailboxes'}{$email}{'plain'}   = $vpopmail->userinfo(email=>$email, field=>'plain');
+		$data{$domain}{'mailboxes'}{$email}{'comment'} = $vpopmail->userinfo(email=>$email, field=>'comment');
+		$data{$domain}{'mailboxes'}{$email}{'quota'}   = $vpopmail->userinfo(email=>$email, field=>'quota');
+		my @dotQmailFile = getDotQmailFile($data{$domain}{'mailboxes'}{$email}{'dir'}, $user);
 		foreach(@dotQmailFile){
-			if (/^\s*\&?(.+\@.+)/){push(@forwardto, $1);}
-			$_ = "";
+			if (/^\s*\|(.+)$/){
+				push(@pipeto, $1);
+				$_="";
+			}elsif (/^([\.\/].+)$/){
+				push(@deliverto, $1);
+				$_="";
+			}elsif (/^\s*\&?(.+\@.+)/){
+				push(@forwardto, $1);
+				$_="";
+			}else{
+				push(@unknown, $_);
+			}
 		}
 		@dotQmailFile = grep(!/^\s*$/, @dotQmailFile);
-		$data{$domain}{$email}{'forwardto'} = \@forwardto;
-		$data{$domain}{$email}{'dotqmail'} = \@dotQmailFile;
+		$data{$domain}{'mailboxes'}{$email}{'actions'}{'forwardto'} = \@forwardto;
+		$data{$domain}{'mailboxes'}{$email}{'actions'}{'dotqmail'} = \@dotQmailFile;
+		$data{$domain}{'mailboxes'}{$email}{'actions'}{'pipeto'} = \@pipeto;
+		$data{$domain}{'mailboxes'}{$email}{'actions'}{'deliverto'} = \@deliverto;
+		$data{$domain}{'mailboxes'}{$email}{'actions'}{'unhandled'} = \@unknown;
 	}
 }
 
