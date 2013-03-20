@@ -24,6 +24,7 @@ my %data = getDomains();
 foreach my $domain (keys(%data)){
 	my @mailboxes = @{$vpopmail->domaininfo(domain => $domain, field=>'mailboxes')};
 	$data{$domain}{'dir'} = $vpopmail->domaininfo(domain => $domain, field=>'dir')."";
+	$data{$domain}{'actions'} = parseDotQmailFile(getDotQmailFilePath($data{$domain}{'dir'}, "default"));
 	foreach my $user (@mailboxes){
 		my $email = $user.'@'.$domain;
 		my @dotQmailFile = getDotQmailFile($data{$domain}{'dir'}, $user);
@@ -106,6 +107,7 @@ sub parseDotQmailFile{
 				push(@unknown, $_);
 			}
 		}
+		say "pipe: $#pipeto; deliver: $#deliverto; forward: $#forwardto; unknown: $#unknown";
 		$return->{'pipeto'} = \@pipeto;
 		$return->{'deliverto'} = \@deliverto;
 		$return->{'forwardto'} = \@forwardto;
