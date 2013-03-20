@@ -9,10 +9,7 @@
 use strict;
 
 use Mail::vpopmail;
-use Data::Dumper;
 use YAML;
-$Data::Dumper::Purity = 1;
-$Data::Dumper::Useqq = 1;
 
 my $vpopmail = Mail::vpopmail->new(debug=>'0');
 
@@ -35,7 +32,6 @@ foreach my $domain (keys(%data)){
 		$data{$domain}{'mailboxes'}{$email}{'actions'} = parseDotQmailFile($dotQmailFilePath);
 	}
 }
-print Dumper(%data);
 YAML::DumpFile($file, %data);
 
 # Passed nothing, returns a hash whose keys are domain names, and each
