@@ -8,7 +8,6 @@
 
 use strict;
 
-use 5.010;
 use Mail::vpopmail;
 use Data::Dumper;
 use YAML;
@@ -108,7 +107,6 @@ sub parseDotQmailFile{
 				push(@unknown, $_);
 			}
 		}
-		say "pipe: $#pipeto; deliver: $#deliverto; forward: $#forwardto; unknown: $#unknown";
 		$return->{'pipeto'} = \@pipeto;
 		$return->{'deliverto'} = \@deliverto;
 		$return->{'forwardto'} = \@forwardto;
