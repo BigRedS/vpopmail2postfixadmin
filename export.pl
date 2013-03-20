@@ -8,6 +8,7 @@
 
 use strict;
 
+use 5.010;
 use Mail::vpopmail;
 use Data::Dumper;
 use YAML;
@@ -22,38 +23,19 @@ my %data;
 my %data = getDomains();
 foreach my $domain (keys(%data)){
 	my @mailboxes = @{$vpopmail->domaininfo(domain => $domain, field=>'mailboxes')};
+	$data{$domain}{'dir'} = $vpopmail->domaininfo(domain => $domain, field=>'dir')."";
 	foreach my $user (@mailboxes){
 		my $email = $user.'@'.$domain;
-		my (@forwardto,@pipeto,@deliverto,@unknown);
-		#print $email."  ";
-		$data{$domain}{'mailboxes'}{$email}{'dir'}     = $vpopmail->userinfo(email=>$email, field=>'dir');
+		my @dotQmailFile = getDotQmailFile($data{$domain}{'dir'}, $user);
+		$data{$domain}{'mailboxes'}{$email}{'dir'}     = $vpopmail->userinfo(email=>$email, field=>'dir')."/$user";
 		$data{$domain}{'mailboxes'}{$email}{'plain'}   = $vpopmail->userinfo(email=>$email, field=>'plain');
 		$data{$domain}{'mailboxes'}{$email}{'comment'} = $vpopmail->userinfo(email=>$email, field=>'comment');
 		$data{$domain}{'mailboxes'}{$email}{'quota'}   = $vpopmail->userinfo(email=>$email, field=>'quota');
-		my @dotQmailFile = getDotQmailFile($data{$domain}{'mailboxes'}{$email}{'dir'}, $user);
-		foreach(@dotQmailFile){
-			if (/^\s*\|(.+)$/){
-				push(@pipeto, $1);
-				$_="";
-			}elsif (/^([\.\/].+)$/){
-				push(@deliverto, $1);
-				$_="";
-			}elsif (/^\s*\&?([\d[a-z].+\@.+)/){
-				push(@forwardto, $1);
-				$_="";
-			}else{
-				push(@unknown, $_);
-			}
-		}
-		@dotQmailFile = grep(!/^\s*$/, @dotQmailFile);
-		$data{$domain}{'mailboxes'}{$email}{'actions'}{'forwardto'} = \@forwardto;
-		$data{$domain}{'mailboxes'}{$email}{'actions'}{'dotqmail'} = \@dotQmailFile;
-		$data{$domain}{'mailboxes'}{$email}{'actions'}{'pipeto'} = \@pipeto;
-		$data{$domain}{'mailboxes'}{$email}{'actions'}{'deliverto'} = \@deliverto;
-		$data{$domain}{'mailboxes'}{$email}{'actions'}{'unhandled'} = \@unknown;
+		my $dotQmailFilePath = getDotQmailFilePath($data{$domain}{'dir'}, $user);
+		$data{$domain}{'mailboxes'}{$email}{'actions'} = parseDotQmailFile($dotQmailFilePath);
 	}
 }
-
+print Dumper(%data);
 YAML::DumpFile($file, %data);
 
 # Passed nothing, returns a hash whose keys are domain names, and each
@@ -70,16 +52,22 @@ sub getDomains{
 			push(@{$domains{$domain}{'aliases'}}, $1);
 		}
 		$domains{$domain}{'name'}="$domain";
+		$domains{$domain}{'dir'}=$vpopmail->domaininfo(domain=>$domain, field=>'map');
 	}
 	return %domains;
+}
+
+sub getDotQmailFilePath{
+	my $directory = shift;
+	my $user = shift;
+	my $file = $directory."/.qmail-$user";
+	return $file;
 }
 
 # Passed a (domain) directory and a user, retrieves that user's .qmail file,
 # and returns its contents as a one-line-per-element array
 sub getDotQmailFile{
-	my $dir = shift;
-	my $user = shift;
-	my $file = $dir."/.qmail-$user";
+	my $file = shift;
 	if(-f $file){
 		my ($f,@file);
 		eval{ 
@@ -94,6 +82,40 @@ sub getDotQmailFile{
 		return @file;
 	}
 	return;
+}
+
+sub parseDotQmailFile{
+		my $dotQmailFilePath = shift;
+		my @dotQmailFile = getDotQmailFile($dotQmailFilePath);
+		my (@forwardto,@pipeto,@deliverto,@unknown);
+		my $line = 0;
+		my $return;
+		foreach(@dotQmailFile){
+			$line++;
+			if (/^\s*\|(.+)$/){
+				push(@pipeto, $1);
+				$_="";
+			}elsif (/^([\.\/].+)$/){
+				push(@deliverto, $1);
+				$_="";
+			}elsif (/^\s*\&?([\d[a-z].+\@.+)/){
+				push(@forwardto, $1);
+				$_="";
+			}else{
+				_warn("Unhandled dot-qmail file line: '".$_."' in '$dotQmailFilePath' on line $line");
+				push(@unknown, $_);
+			}
+		}
+		$return->{'pipeto'} = \@pipeto;
+		$return->{'deliverto'} = \@deliverto;
+		$return->{'forwardto'} = \@forwardto;
+		$return->{'unknown'}   = \@unknown;
+		return $return;
+}
+sub _warn{
+	my $message = shift;
+	chomp $message;
+	print STDERR $message."\n";
 }
 
 sub usage(){

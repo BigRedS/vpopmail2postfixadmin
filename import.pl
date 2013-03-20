@@ -13,9 +13,9 @@
 use lib '/home/avi/bin/vpostmail';
 
 use Data::Dumper;
-use Mail::Postfixadmin;
+#use Mail::Postfixadmin;
 use Getopt::Std;
-use YAML;
+use YAML qw/LoadFile/;
 my %o;
 my %options;
 
@@ -36,12 +36,15 @@ $/ = undef;
 #my %config = %{eval <$f>};
 my %config = LoadFile($file);
 
+print Dumper(%config);
+exit;
+
 open(my $pwfile, ">", $passwordFile) or die "Error opening password file $passwordFile";
 
-my $v = Mail::Postfixadmin->new(
-	mysqlconf => '/home/avi/bin/.vmail.mysql.conf',
-	storeCleartextPassword => 1,
-);
+#my $v = Mail::Postfixadmin->new(
+#	mysqlconf => '/home/avi/bin/.vmail.mysql.conf',
+#	storeCleartextPassword => 1,
+#);
 
 #Verbosity:
 #1: can't-configures only (stdout)
