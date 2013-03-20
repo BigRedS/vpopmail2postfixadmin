@@ -61,6 +61,7 @@ sub getDomains{
 sub getDotQmailFilePath{
 	my $directory = shift;
 	my $user = shift;
+	$user =~ s/\./:/;
 	my $file = $directory."/.qmail-$user";
 	return $file;
 }
