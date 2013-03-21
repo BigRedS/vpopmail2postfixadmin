@@ -6,7 +6,7 @@ to [postfixadmin][1].
 
 The result is a pair of scripts since the export requires a [vpopmail module][2] that
 you probably don't want to install on the postfix machine, and the import one 
-requires my [Vpostmail][3] module which you probably don't want on the vpopmail one.
+requires my [Postfixadmin][3] module which you probably don't want on the vpopmail one.
 
 So it's as simple as a single-script migration, but a little bit simpler and most of 
 the complexity is down to my module not being on CPAN.
@@ -29,36 +29,28 @@ It can currently only migrate four things:
 * passwords
 * forwarding addresses
 
-and two of those have caveats. It'll only do the password if  vpopmail has stored 
-it in clear text. There's no de-hashing going on. And if it finds a (or multiple)
-forwarding addresses in the .qmail file (i.e. lines beginning with '&' or containing
-'@' signs), then local mail delivery is not confiugred and instead all mail destined
-for that account is forwarded to those addresses listed in the .qmail file instead.
+Getting the password synced requires that vpopmail be storing it in cleartext. This
+is checked for each mailbox and those missing passwords have them generated for them;
+passwords generated so are written to a file called `passwords` in the current 
+directory.
+
+Forwarding addresses are deduced from some forms of piping into `vdelivermail`, and
+should be deduced from mailbox lines (but aren't).
 
 export.pl
 ---------
-exports config from the vpopmail system on the machine it's run on. Dumps the
-config to the file passed as its only argument. It's basically a hash of hashes
-( `$hash{domain}{user}{<parameter>}` ) dumped out through `Data::Dumper`. In fact, 
-it's exactly that.
-
-The usage is refreshingly simple; there are no options, all you can make it do is 
-dump config to a file:
+exports config from the vpopmail system on the machine it's run on using `Mail::vpopmail`. 
+Dumps the config to the file passed as its only argument, as a YAML file. There's no 
+options and the only argument it understands is a path to a file:
 
     export.pl ./somefile
 
 import.pl
 ---------
-Imports config from the file it's passed (as produced by export.pl) by `eval`ing it
-and inserts it into the postfixadmin system on the machine it's run on. Requires my 
-Vpostadmin module.
+Imports config from the file it's passed (as produced by export.pl) and inserts it 
+into the postfixadmin system on the machine it's run on. Requires Mail::Postfixadmin.
 
-This one has options and everything:
-
-    import.pl , part of vpopmail2postfixadmin
         
-    usage:
-    
     	import.pl <options> -f <file>
     
     Options:
@@ -91,5 +83,5 @@ This one has options and everything:
 
 [0]: http://www.inter7.com/index.php?page=vpopmail
 [1]: http://postfixadmin.sourceforge.net/
-[2]: http://search.cpan.org/~jkister/Mail-vpopmail-0.60b3/vpopmail.pm
-[3]: https://github.com/BigRedS/vpostmail
+[2]: https://metacpan.org/module/Mail::vpopmail
+[3]: https://github.com/BigRedS/Mail-Postfixadmin
