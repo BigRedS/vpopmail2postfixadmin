@@ -238,7 +238,7 @@ sub dumpPasswords{
 sub configureDomain {
 	my $domain = shift;
 	my $domainName = $domain->{'name'};
-#	return if $p->domainExists($domainName);
+	return if $p->domainExists($domainName);
 
 	if($domain->{'aliases'} > 0){
 		my $targets = join(" ", @{$domain->{'aliases'}});
