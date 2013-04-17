@@ -187,7 +187,7 @@ sub _info{
 
 sub usage {
 
-	print <<EOF
+	return <<EOF
 export.pl, part of vpopmail2postfixadmin
 
 usage: 
