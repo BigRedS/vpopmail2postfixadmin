@@ -50,6 +50,7 @@ _info("First few maildirs:");
 foreach(qw/0 1 2 3/){
 	_info("   ".@rsyncs[$_]->[3]) if exists $rsyncs[$_];
 }
+sleep 4;
 
 # Get the UID and GUID as which Postfix runs, in order that
 # we can later su to this and so write the mail as if postfix
@@ -112,8 +113,12 @@ sub syncMailboxes{
 	foreach my $cmd (@rsyncs){
 		my $mailbox = $cmd->[3];
 		`mkdir -p $mailbox`;
-		_info("CMD: ", @{$cmd});
+		_info("CMD: ", @{$cmd}. "2>&1 >/dev/null");
 		my $output = system(@{$cmd});
+		if($? > 0){
+			_warn("Rsync failed ($?) : $output");
+			next;
+		}
 		renameMailFiles($mailbox);
 		renameDovecotIndexes($mailbox);
 		`chown $uid:$gid $mailbox/.. -R`;
