@@ -134,9 +134,8 @@ sub processActions{
 						next;
 					}
 					#See if vdelivermail is being used to effect a forwarder:
-					#TODO: cope wth dir hashing:
-					if($target =~ m#vdelivermail '' .+domains/(.+)/(.+)$#){
-						my $to = $2.'@'.$1;
+					if( my @matches = ($target =~ m#vdelivermail '' .+domains/(\d+/)?(.+)/(.+)$#)){
+						my $to = $matches[-1].'@'.$matches[-2];
 						print "     Set forwarder to $to\n" if $verbosity > 1;
 						push(@{$actions->{'forwardto'}}, $to);
 						$target = "";
@@ -239,7 +238,7 @@ sub dumpPasswords{
 sub configureDomain {
 	my $domain = shift;
 	my $domainName = $domain->{'name'};
-	return if $p->domainExists($domainName);
+#	return if $p->domainExists($domainName);
 
 	if($domain->{'aliases'} > 0){
 		my $targets = join(" ", @{$domain->{'aliases'}});
@@ -247,7 +246,7 @@ sub configureDomain {
 			target => $targets,
 			alias  => $domainName,
 		);
-		print "  $domainName is an alias for $domain->{'aliases'}";
+		print "  $domainName is an alias for $targets\n";
 	}else{
 		$p->createDomain(
 			domain => $domainName,
