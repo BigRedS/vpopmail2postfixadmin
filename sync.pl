@@ -17,16 +17,21 @@ my %o;
 # f: supply a yaml file
 # r: path to rsync daemon
 # o: rsync options
-# h: host from which to sync the mail
+# H: host from which to sync the mail
 # u: user to connect as
 # m: only do this mailbox
 # U: don't switch to vmail user
-getopts('f:h:r:O:m:U', \%o);
+getopts('hf:H:r:O:m:U', \%o);
 
-my $f_yaml = $o{'f'} || _error("No file supplied (use -f)");
+if(exists($o{'h'})){
+	print usage();
+	exit;
+}
+
+my $f_yaml = $o{'f'} || _error("No file supplied (use -f, or -h for help)");
 my $rsyncBinary = $o{'r'} || `which rsync` ; chomp $rsyncBinary;
 my $rsyncOptions = $o{'O'} || "avz";
-my $rsyncHost = $o{'h'} || _error("No host supplied (use -f)");
+my $rsyncHost = $o{'H'} || _error("No host supplied (use -H, or -h for help)");
 my $rsyncUser = $o{'u'} || getpwuid($<);
 my $dontSwitchUser = $o{'U'} || undef;
 
@@ -172,4 +177,30 @@ sub _error{
 }
 sub _info{
 	say join(" ", @_);
+}
+
+
+sub usage {
+
+	print <<EOF
+export.pl, part of vpopmail2postfixadmin
+
+usage: 
+
+	sync.pl <options> -f <file> -H <hostname>
+	
+Options:
+
+    -f <file>     read from <file> for config data
+		-h            show this help
+		-H <hostname> host from which to rsync the mail
+		-m <username> only process <username>'s mailbox
+		-o <options>  rsync options. No leading hyphen.
+		-r <path>     path to rsync binary (defaults to \$PATH)
+		-u <username> user for rsync connection
+		-U            by default, this script will su to the user as
+		              which postfix runs. Use this flag to prevent that.
+
+	
+EOF
 }
