@@ -21,7 +21,7 @@ my %o;
 # u: user to connect as
 # m: only do this mailbox
 # U: don't switch to vmail user
-getopts('hf:H:r:O:m:U', \%o);
+getopts('hf:H:r:O:m:Uu:', \%o);
 
 if(exists($o{'h'})){
 	print usage();
