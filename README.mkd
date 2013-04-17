@@ -1,23 +1,19 @@
 vpopmail2postfixadmin
 =====================
 
-The plan was for a single script to migrate a system from Inter7's [vpopmail][0] 
-to [postfixadmin][1].
+This is a set of scripts to use when migrating accounts and domains from a system running
+Inter7's [vpopmail][0] to one running [postfixadmin][1].
 
-The result is a pair of scripts since the export requires a [vpopmail module][2] that
-you probably don't want to install on the postfix machine, and the import one 
-requires my [Postfixadmin][3] module which you probably don't want on the vpopmail one.
+There will be four scripts:
 
-So it's as simple as a single-script migration, but a little bit simpler and most of 
-the complexity is down to my module not being on CPAN.
+* export.pl is run on the vpopmail system and creates a file describing the domains and accounts.
+* import.pl is run on the postfixadmin system and reads the above file to configure the server.
+* sync.pl rsyncs the maildirs from the vpopmail system to the postfixadmin one
+* test.pl checks that everything's worked.
 
-
-Anyway, two scripts. The general usage would be
-
-    root@vpopmail-server~: export.pl mailconfig
-    root@vpopmail-server~: scp mailconfig root@postfix-server:~
-
-    root@postfix-server~: import.pl -f mailconfig
+The export requires a [vpopmail module][2], and the import one equires my [Postfixadmin][3] module. 
+They all require YAML, but everything else should be core Perl. sync.pl requires rsync, and they
+all make use of Linuxy coreutils (chown, chmod, mkdir etc.).
 
 limitations
 -----------
@@ -80,6 +76,7 @@ into the postfixadmin system on the machine it's run on. Requires Mail::Postfixa
     one generated for them using the parameter to -g (or its 
     default) these usernames and their auto-generated passwords 
     written to the password file specified by -p (or its default).
+
 
 [0]: http://www.inter7.com/index.php?page=vpopmail
 [1]: http://postfixadmin.sourceforge.net/
