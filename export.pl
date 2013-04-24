@@ -76,6 +76,8 @@ sub getDotQmailFile{
 		}
 		close($f);
 		return @file;
+	}else{
+		print STDERR "ERROR: dotqmailfile '$file' doesn't exist\n";
 	}
 	return;
 }
@@ -94,7 +96,7 @@ sub parseDotQmailFile{
 			}elsif (/^([\.\/].+)$/){
 				push(@deliverto, $1);
 				$_="";
-			}elsif (/^\s*\&?([\d[a-z].+\@.+)/){
+			}elsif (/^&?([\da-z]?.+\@.+)/){
 				push(@forwardto, $1);
 				$_="";
 			}else{
