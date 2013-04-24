@@ -23,7 +23,6 @@ foreach my $domain (keys(%data)){
 	$data{$domain}{'actions'} = parseDotQmailFile(getDotQmailFilePath($data{$domain}{'dir'}, "default"));
 	foreach my $user (@mailboxes){
 		my $email = $user.'@'.$domain;
-		my @dotQmailFile = getDotQmailFile($data{$domain}{'dir'}, $user);
 		$data{$domain}{'mailboxes'}{$email}{'dir'}     = $vpopmail->userinfo(email=>$email, field=>'dir')."/$user";
 		$data{$domain}{'mailboxes'}{$email}{'plain'}   = $vpopmail->userinfo(email=>$email, field=>'plain');
 		$data{$domain}{'mailboxes'}{$email}{'comment'} = $vpopmail->userinfo(email=>$email, field=>'comment');
