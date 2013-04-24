@@ -57,7 +57,11 @@ sub getDotQmailFilePath{
 	my $user = shift;
 	$user =~ s/\./:/;
 	my $file = $directory."/.qmail-$user";
-	return $file;
+	if(! -f $file){
+		$file = $directory."/".$user."/.qmail";
+	}
+	return $file if -f $file;
+	return;
 }
 
 # Passed a (domain) directory and a user, retrieves that user's .qmail file,
@@ -84,6 +88,7 @@ sub getDotQmailFile{
 
 sub parseDotQmailFile{
 		my $dotQmailFilePath = shift;
+		return unless -f $dotQmailFilePath;
 		my @dotQmailFile = getDotQmailFile($dotQmailFilePath);
 		my (@forwardto,@pipeto,@deliverto,@unknown);
 		my $line = 0;
