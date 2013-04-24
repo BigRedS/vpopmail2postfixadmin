@@ -67,7 +67,7 @@ sub getDotQmailFile{
 	if(-f $file){
 		my ($f,@file);
 		eval{ 
-			open($f, "<", $file) or die "Error opening $file for writing";
+			open($f, "<", $file) or die "Error opening $file for reading";
 		};
 		return if($@);
 		foreach(<$f>){
